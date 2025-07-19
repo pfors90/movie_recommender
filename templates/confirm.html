@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">-->
+    <link rel="stylesheet" href="../static/css/main.css">
+    <title>Confirm Your Movies</title>
+</head>
+<body>
+    <header>Welcome to "What Should I Watch?"</header>
+    <nav>
+      <a href="/">Home</a> -
+      <a href="/your_movies">What Should I Watch?</a> -
+      <a href="/visualizations">Data Visualizations</a>
+    </nav>
+    <section class="main">
+        <article class="general-body">
+            <p>We're working to process your request, but we have a few questions about the movies that you've entered.</p>
+            <form action = "/process_confirmation" method = "POST">
+                <!-- confirm any exact matches that were found in the database -->
+                {% if exact_matches %}
+                <p>We found exact matches for the following movies:</p>
+                <ul>
+                    {% for movie in exact_matches %}
+                    <li>
+                        {{ movie.title }} ({{ movie.release_date }})
+                        <input type="hidden" name="confirmed_ids" value="{{ movie.id }}">
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <!-- display partial matches for the user to pick from -->
+                {% for user_title, options in partial_matches %}
+                {% set idx = loop.index0 %}
+                <fieldset>
+                    <legend>Select the correct match for {{ user_title }}</legend>
+                    {% for movie in options %}
+                    <label>
+                        <input type="radio" name="partial_{{ idx }}" value="{{ movie.id }}">{{ movie.title }} ({{ movie.release_date }})
+                    </label><br>
+                    {% endfor %}
+                </fieldset>
+                {% endfor %}
+
+                <!-- warn the user about (potentially?) invalid movie titles -->
+                {% if missing_matches %}
+                <p>No matches were found for the following movies:</p>
+                <ul>
+                    {% for movie in missing_matches %}
+                    <li>{{ movie }}</li>
+                    {% endfor %}
+                </ul>
+                <p>You can either submit the above selections or <a href="/your_movies">go back</a> to try again.</p>
+                {% endif %}
+
+                <button type="submit">Get recommendations!</button>
+            </form>
+        </article>
+    </section>
+</body>
+</html>
