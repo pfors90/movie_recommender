@@ -21,16 +21,16 @@
             <p><em>Note that while precise titles are best, we do support the following wildcards in your query:</em>
                 <ul>
                     <li><strong>% (percent):</strong> matches any number of characters</li>
-                    <li><strong>- (hyphen):</strong> matches any single character</li>
+                    <li><strong>_ (underscore):</strong> matches any single character</li>
                 </ul>
             </p>
             <h3>Your movies:</h3>
             <form action="/parse_user_movies" method="POST">
-                <input type="text" class="form__text" name="movie_titles" id="movie-1" placeholder="Movie 1"/><br>
-                <input type="text" class="form__text" name="movie_titles" id="movie-2" placeholder="Movie 2"/><br>
-                <input type="text" class="form__text" name="movie_titles" id="movie-3" placeholder="Movie 3"/><br>
-                <input type="text" class="form__text" name="movie_titles" id="movie-4" placeholder="Movie 4"/><br>
-                <input type="text" class="form__text" name="movie_titles" id="movie-5" placeholder="Movie 5"/><br>
+                <input type="text" class="form__text" name="movie_titles" placeholder="Movie 1"/><br>
+                <input type="text" class="form__text" name="movie_titles" placeholder="Movie 2"/><br>
+                <input type="text" class="form__text" name="movie_titles" placeholder="Movie 3"/><br>
+                <input type="text" class="form__text" name="movie_titles" placeholder="Movie 4"/><br>
+                <input type="text" class="form__text" name="movie_titles" placeholder="Movie 5"/><br>
                 <button type="submit" class="form__submit">Get recommendations!</button>
             </form>
         </article>

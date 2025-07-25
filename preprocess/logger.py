@@ -1,6 +1,6 @@
 from datetime import datetime
 
-LOG_FILE = '../data/log.txt'
+LOG_FILE = 'log.txt'
 
 def logger(message: str, type=None) -> None:
     """'type' defaults to message, set to 'a' for alert or 'e' for error"""
