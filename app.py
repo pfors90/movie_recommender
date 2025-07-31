@@ -2,6 +2,7 @@ from flask import Flask, render_template, abort, request
 
 import database_helper as dbh
 import vector_helper as vh
+from logger import logger
 
 app = Flask(__name__)
 
@@ -21,15 +22,23 @@ def your_movies():
     # routing for the user movie entry page
     return render_template("your_movies.html")
 
+
 @app.route("/parse_user_movies/", methods=["POST"])
 def parse_user_movies():
     #--TODO: modify database to store a "normalized" movie title (remove spaces, punctuation, etc)
     #--TODO: then normalize user queries and search the database for a partial/full match
 
+    alerts = []
     # determines whether we can proceed with the recommendations or if we need clarification from the user
-
     user_movie_titles = request.form.getlist("movie_titles")
     user_movie_titles = [title.strip() for title in user_movie_titles if title.strip()]
+
+    # TODO: bring in Bootstrap CSS and display pretty alerts at the top of the page
+    # TODO: or pass this to a custom error page that redirects to your_movies.html because the below block keeps
+    # TODO:     /parse_user_movies in the URL bar, which would throw an error if the user hits refresh
+    if not user_movie_titles:
+        alerts.append("Enter at least one movie title.")
+        return render_template("your_movies.html", alerts = alerts)
 
     exact_matches = []
     partial_matches = []
@@ -49,6 +58,14 @@ def parse_user_movies():
 
         else: # no matches found
             missing_matches.append(title)
+
+    # TODO: bring in Bootstrap CSS and display pretty alerts at the top of the page
+    # TODO: or pass this to a custom error page that redirects to your_movies.html because the below block keeps
+    # TODO:     /parse_user_movies in the URL bar, which would throw an error if the user hits refresh
+    if len(missing_matches) == len(user_movie_titles):
+        alerts.append("None of the following movie titles were found in the database")
+        alerts.append(missing_matches)
+        return render_template("your_movies.html", alerts = alerts)
 
     # pass potential matches to a confirmation page for the user
     if partial_matches or missing_matches:

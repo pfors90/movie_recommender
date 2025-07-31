@@ -1,17 +1,13 @@
-import database_setup as db
-from logger import logger
-import vector_preprocess as vp
-
 import sqlite3
 import pandas as pd
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-
+from logger import logger
+import database_setup as db
+import vector_preprocess as vp
+import create_visualizations as cv
 
 RAW_FILE = 'data/data.csv'
 DB_FILE = 'movie_recommender.db'
-
 
 def load_and_filter_csv(input_file: str) -> pd.DataFrame:
     """
@@ -23,7 +19,7 @@ def load_and_filter_csv(input_file: str) -> pd.DataFrame:
     df = pd.read_csv(input_file)
     logger(f"Loaded CSV file '{input_file}' with {len(df)} records")
 
-    # standardize data types
+    # standardize data for filtering
     df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
     df['runtime'] = pd.to_numeric(df['runtime'], errors='coerce')
     df['vote_count'] = pd.to_numeric(df['vote_count'], errors='coerce')
@@ -33,14 +29,24 @@ def load_and_filter_csv(input_file: str) -> pd.DataFrame:
             (df['adult'] == False) & # no adult films
             (df['status'] == 'Released') & # only movies available for viewing
             (df['overview'].str.split().str.len() >= 5) &
+            (df['keywords'].str.split().str.len() >= 1) &
             # (df['overview'].str.contains(r'[A-Za-z]', regex=True)) & # overview isn't numeric (is hopefully coherent)
             # (df['original_language'] == 'en') &
-            (df['runtime'].between(60, 240)) &
+            (df['runtime'].between(60, 180)) &
             (df['release_date'].dt.year >= 1920) &
             (df['vote_count'] >= 40)
     )
 
     filtered = df[filters].copy()
+
+    # standardize data for processing
+    filtered["genres"] = filtered["genres"].apply(
+        lambda x: [g.strip().capitalize() for g in x.split(',')] if pd.notnull(x) else []
+    )
+    filtered["keywords"] = filtered["keywords"].apply(
+        lambda x: [k.strip().lower() for k in x.split(',')] if pd.notnull(x) else []
+    )
+
     logger(f"Filtered down to {len(filtered)} movies")
     return filtered
 
@@ -78,7 +84,7 @@ def process_movies_from_df(df: pd.DataFrame, cursor) -> None:
             release_date = excluded.release_date
     """, cleaned_movies)
 
-    logger(f"{len(cleaned_movies)} movies added to database.")
+    logger(f"{len(cleaned_movies)} movies added to database. Pending commit.")
 
 
 def process_genres_from_df(df: pd.DataFrame, cursor) -> None:
@@ -94,8 +100,11 @@ def process_genres_from_df(df: pd.DataFrame, cursor) -> None:
 
     for _, row in df.iterrows():
         movie_id = int(row["id"])
-        raw_genres = row.get("genres", "")
-        genres = [g.strip() for g in raw_genres.split(",") if g.strip()]
+        # raw_genres = row.get("genres", "")
+        # # TODO: modify this to account for new data preprocessing
+        # genres = [g.strip() for g in raw_genres.split(",") if g.strip()]
+
+        genres = row.get("genres", [])
 
         new_genres = set(g for g in genres if g not in genre_map)
         if new_genres:
@@ -114,7 +123,7 @@ def process_genres_from_df(df: pd.DataFrame, cursor) -> None:
                 movie_genre_pairs.append([movie_id, genre_id])
 
     cursor.executemany("INSERT OR IGNORE INTO movies_genres (movie_id, genre_id) VALUES (?, ?)", movie_genre_pairs)
-    logger(f"New (movie,genre) pairs added to database: {len(movie_genre_pairs)}")
+    logger(f"New (movie,genre) pairs added to database: {len(movie_genre_pairs)}. Pending commit.")
 
 
 def clean_keywords(keyword_str: str) -> list:
@@ -144,8 +153,11 @@ def process_keywords_from_df(df: pd.DataFrame, cursor) -> None:
 
     for _, row in df.iterrows():
         movie_id = int(row["id"])
-        raw_keywords = row.get("keywords", "")
-        keywords = [k.strip() for k in clean_keywords(raw_keywords)]
+        # raw_keywords = row.get("keywords", "")
+        # # TODO: modify this to account for new data preprocessing
+        # keywords = [k.strip() for k in clean_keywords(raw_keywords)]
+
+        keywords = row.get("keywords", [])
 
         new_keywords = set(k for k in keywords if k not in keyword_map)
         if new_keywords:
@@ -164,7 +176,7 @@ def process_keywords_from_df(df: pd.DataFrame, cursor) -> None:
                 movie_keyword_pairs.append([movie_id, keyword_id])
 
     cursor.executemany("INSERT OR IGNORE INTO movies_keywords (movie_id, keyword_id) VALUES (?, ?)", movie_keyword_pairs)
-    logger(f"New (movie,keyword) pairs added to database: {len(movie_keyword_pairs)}")
+    logger(f"New (movie,keyword) pairs added to database: {len(movie_keyword_pairs)}. Pending commit.")
 
 
 def main():
@@ -191,7 +203,7 @@ def main():
         conn.commit()
         logger(f"All data from {RAW_FILE} has been processed and committed to the database")
     except Exception as e:
-        logger(f"Error in 'main.py' while processing movie data:\n{e}\nAborting", type='e')
+        logger(f"Error in 'main.py' while processing movie data:\n{e}\nAborting - no changes committed to the database", type='e')
         exit(f"Error: {e}")
 
     try:
@@ -199,8 +211,14 @@ def main():
         conn.commit()
         logger("All vectors loaded into table (movies) by vp.import_vector_data()")
     except Exception as e:
-        logger(f"Error in main.py while processing vp.import_vector_data():\n{e}\nAborting", type='e')
+        logger(f"Error in main.py while processing vp.import_vector_data():\n{e}\nAborting - no changed committed to the database", type='e')
         exit(f"Error: {e}")
+
+    logger("Creating visualizations for updated data set")
+    cv.render_genre_distribution_chart(filtered_df)
+    cv.render_keyword_decade_distributions(filtered_df)
+    cv.render_movie_runtime_boxplot(filtered_df)
+    logger("Visualizations created and saved to static/images")
 
 
 if __name__ == '__main__':

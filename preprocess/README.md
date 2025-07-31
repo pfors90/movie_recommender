@@ -4,13 +4,13 @@ Using dataset from: https://www.kaggle.com/datasets/asaniczka/tmdb-movies-datase
 Published 2025-07-16<br><br>
 
 Provided files are current as of the publish date listed above<br>
-Movie corpus filtering criteria can be adjusted in <em>scripts/clean_movies.py</em><br>
+Movie corpus filtering criteria can be adjusted in <em>preprocess\clean_movies.py</em><br>
 
 <ol>
     <li>Navigate to the project base directory</li>
-    <li>Ensure subfolder <em>data/</em>exists</li>
-    <li>Place <em>data.csv</em> (link above) in the <em>data/</em> subdirectory</li>
-    <li>Run <em>preprocess/main.py</em></li>
+    <li>Ensure subfolder <em>data\</em> exists</li>
+    <li>Place <em>data.csv</em> (link above) in the <em>data\</em> subdirectory</li>
+    <li>Run <em>preprocess\main.py</em></li>
 </ol>
 
 This will remove all entries according to the filters outlined in <em>preprocess/main.py</em>, then compare the remaining

@@ -1,9 +1,9 @@
-from logger import logger
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
 import os
 import json
+
+from logger import logger
 
 DATABASE_FILE = 'movie_recommender.db'
 VECTORIZER_FILE = 'data/vectorizer.pkl'
@@ -15,6 +15,7 @@ FEATURE_NAMES_CACHE = 'data/feature_names.json'
 
 def custom_tokenizer(x):
     return x.split('|')
+
 
 def get_movies_missing_vectors(cursor) -> list:
     result = cursor.execute("SELECT id, vector FROM movies")

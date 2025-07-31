@@ -1,9 +1,9 @@
-from CustomExceptions import MovieNotFound
-from Movie import Movie
-
 import json
 import sqlite3
 from flask import g
+
+from CustomExceptions import MovieNotFound
+from Movie import Movie
 
 DB_FILE = 'movie_recommender.db'
 
@@ -53,6 +53,7 @@ def get_potential_title_matches(movie_title: str) -> list[sqlite3.Row]:
     results = db.execute(wildcard_query, [f"%{movie_title}%"]).fetchall()
     return results
 
+
 # returns a Movie object from dbh for a corresponding movie id
 def get_movie_by_id(movie_id: int) -> Movie:
     db = get_db()
@@ -73,7 +74,7 @@ def get_movies_by_ids(movie_ids: list[int]) -> list[Movie]:
 
 
 # grabs a list of genre names for a given id from join table
-def get_genres_by_id(movie_id: int) -> [list[str], list[int]]:
+def get_genres_by_id(movie_id: int) -> tuple[list, list]:
     db = get_db()
     query = "SELECT mg.genre_id, g.genre FROM movies_genres AS mg INNER JOIN genres AS g ON mg.genre_id = g.id WHERE mg.movie_id = (?)"
     result = db.execute(query, (movie_id,)).fetchall()
@@ -85,8 +86,9 @@ def get_genres_by_id(movie_id: int) -> [list[str], list[int]]:
     genre_ids = [r["genre_id"] for r in result]
     return genres, genre_ids
 
+
 # grabs a list of keywords for a given id from join table
-def get_keywords_by_id(movie_id: int) -> [list[str], list[int]]:
+def get_keywords_by_id(movie_id: int) -> tuple[list, list]:
     db = get_db()
     query = "SELECT mk.keyword_id, k.keyword FROM movies_keywords AS mk INNER JOIN keywords AS k ON mk.keyword_id = k.id WHERE mk.movie_id = (?)"
     result = db.execute(query, (movie_id,)).fetchall()

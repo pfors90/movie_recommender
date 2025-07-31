@@ -1,5 +1,6 @@
 import database_helper as dbh
 from Movie import Movie
+from logger import logger
 
 def get_composite_by_vectors(vectors: list[dict], normalize=True) -> dict[int, float]:
     """
@@ -15,9 +16,10 @@ def get_composite_by_vectors(vectors: list[dict], normalize=True) -> dict[int, f
         for k, v in vector.items():
             composite[k] = composite.get(k, 0.0) + v # default 0.0 if the index isn't yet in the dict
 
-    num_vectors = len(vectors)
-    for k in composite:
-        composite[k] /= num_vectors
+    # result is the same after normalization whether we average or not
+    # num_vectors = len(vectors)
+    # for k in composite:
+    #     composite[k] /= num_vectors
 
     if normalize: # default case
         return normalize_vector(composite)
@@ -83,7 +85,7 @@ def cosine_similarity(vector1: dict[int, float], vector2: dict[int, float], norm
     return similarity_score / (compute_norm(vector1)*compute_norm(vector2))
 
 
-def get_recommendations_by_ids(user_movie_ids: list[int], n=5) -> list[tuple[Movie], float]:
+def get_recommendations_by_ids(user_movie_ids: list[int], n=5):
     """
     this method takes in a list of movie IDs and an int n for number of results requested, takes a composite of the
     vectors for those movies, and then compares that composite vector to the vector representation of every potential
@@ -94,6 +96,7 @@ def get_recommendations_by_ids(user_movie_ids: list[int], n=5) -> list[tuple[Mov
     :param n: the number of results to return (default 5)
     :return: a list of tuples (Movie object, similarity score as float)
     """
+    logger(f"Processing recommendation for IDs: {user_movie_ids}")
     user_movies = dbh.get_movies_by_ids(user_movie_ids)
     user_vectors = [m.vector for m in user_movies]
     genre_id_set = set() # defined as a set to avoid duplicates
@@ -105,6 +108,7 @@ def get_recommendations_by_ids(user_movie_ids: list[int], n=5) -> list[tuple[Mov
     user_composite_vector = get_composite_by_vectors(user_vectors)
 
     potential_matches = dbh.get_potential_matches(list(genre_id_set), list(keyword_id_set))
+    logger(f"Keyword+genre filter: {len(potential_matches)} potential matches found")
     [potential_matches.pop(m) for m in user_movie_ids] # make sure that we exclude movies the user entered
     recommendation_scores = {}
 
@@ -113,6 +117,7 @@ def get_recommendations_by_ids(user_movie_ids: list[int], n=5) -> list[tuple[Mov
 
     # sort the movie IDs and scores by score and return them together as a list
     top_movies = sorted(recommendation_scores, key=lambda x: recommendation_scores[x], reverse=True)[:n]
+    logger(f"Recommending movie IDs {top_movies}")
     rec_scores = sorted(recommendation_scores.values(), reverse=True)[:n]
     top_movies = dbh.get_movies_by_ids(top_movies)
     return zip(top_movies, rec_scores)

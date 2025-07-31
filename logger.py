@@ -1,10 +1,10 @@
 from datetime import datetime
 
-LOG_FILE = 'preprocess/log.txt'
+LOG_FILE = 'log.txt'
 
 def logger(message: str, type=None) -> None:
     """
-    writes to preprocess/log.txt\n
+    writes to log.txt\n
     'type' defaults to message, set to 'a' for alert or 'e' for error
     """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
