@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <title>What Should I Watch? - Welcome</title>
+</head>
+<body>
+    <header>Welcome to "What Should I Watch?"</header>
+    <nav>
+      <a href="/">Home</a> -
+      <a href="/your_movies">What Should I Watch?</a> -
+      <a href="/visualizations">Data Visualizations</a>
+    </nav>
+    <section class="main">
+        <article class="general-body">
+            <p>Welcome to "What Should I Watch?," a movie recommendation ending build in Python + Flask, powered by scikit
+                learn. This webapp is intended to help you find the next movie to watch during your marathon. While
+                streaming services do offer tailored recommendations, not everyone is locked to a single platform, and
+                websites like IMDb tend to leave much to be desired by their "Related Movies" sections.</p>
+            <p>To proceed, click on "What Should I Watch?" above and enter up to five movies (preferably at least somewhat
+                related for the best success), and press submit! The app will analyze the keywords that your selected
+                movies have been tagged with and compare against a database of around 20k potential matches for the five
+                movies that you'd probably like to watch next.</p>
+        </article>
+    </section>
+    <section class="additional">
+        <article class="references">
+            <h3>References</h3>
+            <ul>
+                <li><a href="https://www.python.org/">Python</a></li>
+                <li><a href="https://scikit-learn.org/stable/">scikit-learn</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/Cosine_similarity">Cosine similarity</a></li>
+                <li><a href="https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies/data">Kaggle - Full TMDB Movies Dataset</a></li>
+            </ul>
+        </article>
+    </section>
+</body>
+</html>

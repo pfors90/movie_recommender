@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <title>What Should I Watch?</title>
+</head>
+<body>
+    <header>Your Recommendations</header>
+    <nav>
+      <a href="/">Home</a> -
+      <a href="/your_movies">What Should I Watch?</a> -
+      <a href="/visualizations">Data Visualizations</a>
+    </nav>
+    <section class="main">
+        <article class="general-body">
+            <h4>You should watch:</h4>
+            {% for movie,score in recs %}
+            <div class="display">
+                <strong>{{ movie.title }}</strong> ({{ movie.release_date }}) - similarity score: {{ score }}<br>
+                Genre(s): {{ movie.genres }}<br>
+                Plot overview: {{ movie.overview }}
+            </div>
+            {% endfor %}
+        </article>
+        <article class="general-body">
+            <h4>Your Submitted Movies:</h4>
+            {% for movie in user_movies %}
+            <div class="display">
+                <strong>{{ movie.title }}</strong> ({{ movie.release_date }})<br>
+                Genre(s): {{ movie.genres }}<br>
+            </div>
+            {% endfor %}
+        </article>
+    </section>
+</body>
+</html>
